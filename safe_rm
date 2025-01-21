@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# rmコマンドをラップ
+# オプションと対象を分離
+options=()
+targets=()
+
+# 引数を分類
+for arg in "$@"; do
+    if [[ "$arg" == -* ]]; then
+        options+=("$arg")
+    else
+        targets+=("$arg")
+    fi
+done
+
+# 対象がない場合は終了
+if [ ${#targets[@]} -eq 0 ]; then
+    echo "Usage: rm [OPTION]... [FILE]..."
+    exit 1
+fi
+
+# 対象を処理
+for target in "${targets[@]}"; do
+    # 存在しない場合の処理
+    if [ ! -e "$target" ]; then
+        echo "Error: '$target' does not exist."
+        continue
+    fi
+
+    # シンボリックリンクの場合の処理
+    if [ -L "$target" ]; then
+        echo "Warning: '$target' is a symbolic link. Deletion is not allowed."
+        continue
+    fi
+done
+
+# 通常のrmコマンドを実行
+command rm "${options[@]}" "${targets[@]}"
+
